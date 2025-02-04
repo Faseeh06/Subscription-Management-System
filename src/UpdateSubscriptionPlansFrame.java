@@ -5,6 +5,9 @@ import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class UpdateSubscriptionPlansFrame extends JFrame {
     private JTable subscriptionTable;
@@ -37,14 +40,20 @@ public class UpdateSubscriptionPlansFrame extends JFrame {
             }
         });
 
-        // Back button
+        // Create button panel with both back and export buttons
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton backButton = new JButton("Back");
+        JButton exportButton = new JButton("Export to CSV");
+        
         backButton.addActionListener(e -> {
             new AdminDashboard().setVisible(true);
             dispose();
         });
+        
+        exportButton.addActionListener(e -> exportToCSV());
+        
         buttonPanel.add(backButton);
+        buttonPanel.add(exportButton);
 
         add(new JScrollPane(subscriptionTable), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -127,6 +136,52 @@ public class UpdateSubscriptionPlansFrame extends JFrame {
             ex.printStackTrace();
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, "Invalid date format. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void exportToCSV() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save CSV File");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setSelectedFile(new File("subscription_data.csv"));
+        
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            if (!file.getName().toLowerCase().endsWith(".csv")) {
+                file = new File(file.getAbsolutePath() + ".csv");
+            }
+
+            try (FileWriter writer = new FileWriter(file)) {
+                // Write headers
+                String[] headers = new String[tableModel.getColumnCount()];
+                for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                    headers[i] = tableModel.getColumnName(i);
+                }
+                writer.write(String.join(",", headers) + "\n");
+
+                // Write data
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    StringBuilder row = new StringBuilder();
+                    for (int j = 0; j < tableModel.getColumnCount(); j++) {
+                        if (j > 0) row.append(",");
+                        Object value = tableModel.getValueAt(i, j);
+                        row.append(value != null ? value.toString().replace(",", ";") : "");
+                    }
+                    writer.write(row.toString() + "\n");
+                }
+
+                JOptionPane.showMessageDialog(this, 
+                    "Data exported successfully to:\n" + file.getAbsolutePath(),
+                    "Export Success", 
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error exporting data: " + ex.getMessage(),
+                    "Export Error",
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
         }
     }
 

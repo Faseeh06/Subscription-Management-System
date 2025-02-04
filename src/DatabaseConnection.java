@@ -1,22 +1,42 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DatabaseConnection {
+    // Update these with your actual database credentials
+    private static final String URL = "jdbc:mysql://localhost:3306/subscription_system";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = ""; // Your MySQL password here
 
     public static Connection connect() {
         try {
-            // Connect to MySQL Database
-            String url = "jdbc:mysql://localhost:3306/subscription_system";
-            String username = "root";  // your MySQL username
-            String password = "faseeh";  // your MySQL password
-
-            Connection conn = DriverManager.getConnection(url, username, password);
-            System.out.println("Connected to the database successfully!");
-            return conn;
-        } catch (SQLException e) {
+            // Register JDBC driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            
+            // Create and return connection
+            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            
+        } catch (ClassNotFoundException e) {
+            System.err.println("MySQL JDBC Driver not found!");
             e.printStackTrace();
-            return null;
+        } catch (SQLException e) {
+            System.err.println("Database Connection Failed!");
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Test the connection
+    public static void main(String[] args) {
+        Connection conn = connect();
+        if (conn != null) {
+            System.out.println("Database connected successfully!");
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Failed to make connection!");
         }
     }
 }

@@ -14,74 +14,83 @@ public class RegistrationPage extends JFrame {
 
     public RegistrationPage() {
         setTitle("Register User");
-        setLayout(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        setLayout(new BorderLayout(10, 10));
 
-        // Create components
-        JLabel firstNameLabel = new JLabel("First Name: ");
-        firstNameField = new JTextField(15);
-        JLabel lastNameLabel = new JLabel("Last Name: ");
-        lastNameField = new JTextField(15);
-        JLabel usernameLabel = new JLabel("Username: ");
-        usernameField = new JTextField(15);
-        JLabel passwordLabel = new JLabel("Password: ");
-        passwordField = new JPasswordField(15);
-        JLabel phoneLabel = new JLabel("Phone No: ");
-        phoneField = new JTextField(15);
-        JLabel emailLabel = new JLabel("Email: ");
-        emailField = new JTextField(15);
+        // Create main panel with GridBagLayout
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Designation dropdown (User or Admin)
-        JLabel designationLabel = new JLabel("Designation: ");
+        // Initialize components
+        firstNameField = new JTextField(20);
+        lastNameField = new JTextField(20);
+        usernameField = new JTextField(20);
+        passwordField = new JPasswordField(20);
+        phoneField = new JTextField(20);
+        emailField = new JTextField(20);
         String[] designations = {"User", "Admin"};
         designationComboBox = new JComboBox<>(designations);
-
-        // Image upload
-        JLabel imageSelectLabel = new JLabel("Select Image: ");
+        
+        // Image components
         imageLabel = new JLabel("No Image Selected", SwingConstants.CENTER);
-        imageLabel.setPreferredSize(new Dimension(120, 120));
+        imageLabel.setPreferredSize(new Dimension(150, 150));
+        imageLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         uploadImageButton = new JButton("Upload Image");
-
         registerButton = new JButton("Register");
 
-        // Add components to the frame
-        add(firstNameLabel);
-        add(firstNameField);
-        add(lastNameLabel);
-        add(lastNameField);
-        add(usernameLabel);
-        add(usernameField);
-        add(passwordLabel);
-        add(passwordField);
-        add(phoneLabel);
-        add(phoneField);
-        add(emailLabel);
-        add(emailField);
-        add(designationLabel);
-        add(designationComboBox);
-        add(imageSelectLabel);
-        add(imageLabel);
-        add(uploadImageButton);
-        add(registerButton);
+        // Add components using GridBagLayout
+        int row = 0;
+        
+        // Add form fields
+        addFormField(mainPanel, gbc, "First Name:", firstNameField, row++);
+        addFormField(mainPanel, gbc, "Last Name:", lastNameField, row++);
+        addFormField(mainPanel, gbc, "Username:", usernameField, row++);
+        addFormField(mainPanel, gbc, "Password:", passwordField, row++);
+        addFormField(mainPanel, gbc, "Phone No:", phoneField, row++);
+        addFormField(mainPanel, gbc, "Email:", emailField, row++);
+        addFormField(mainPanel, gbc, "Designation:", designationComboBox, row++);
 
-        // Action listener for uploading image
-        uploadImageButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                uploadImage();
-            }
-        });
+        // Add image section
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        mainPanel.add(imageLabel, gbc);
 
-        // Action listener for the register button
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleRegistration();
-            }
-        });
+        gbc.gridy = row++;
+        mainPanel.add(uploadImageButton, gbc);
 
-        setSize(400, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Center the frame
+        // Add register button
+        gbc.gridy = row++;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(20, 10, 5, 10);
+        mainPanel.add(registerButton, gbc);
+
+        // Add main panel to frame
+        add(mainPanel, BorderLayout.CENTER);
+
+        // Add action listeners
+        uploadImageButton.addActionListener(e -> uploadImage());
+        registerButton.addActionListener(e -> handleRegistration());
+
+        setSize(500, 700);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setResizable(false);
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String labelText, JComponent component, int row) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(new JLabel(labelText), gbc);
+
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(component, gbc);
     }
 
     private void uploadImage() {
