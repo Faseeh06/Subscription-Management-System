@@ -91,36 +91,39 @@ public class AdminLogin extends JFrame {
         boolean isAdmin = isAdminCheckBox.isSelected();
 
         try (Connection conn = DatabaseConnection.connect()) {
+            if (conn == null) {
+                JOptionPane.showMessageDialog(this, "Database connection failed!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            System.out.println("Attempting login for user: " + username); // Debug message
+
             String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, username);
             statement.setString(2, password);
+            
+            System.out.println("Executing query: " + statement.toString()); // Debug message
+            
             ResultSet result = statement.executeQuery();
 
             if (result.next()) {
                 boolean storedIsAdmin = result.getBoolean("is_admin");
                 int userId = result.getInt("user_id");
 
-                if (storedIsAdmin == isAdmin) {
-                    JOptionPane.showMessageDialog(this, (isAdmin ? "Admin" : "User") + " login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                System.out.println("User found. Is admin in DB: " + storedIsAdmin); // Debug message
+                System.out.println("User selected admin checkbox: " + isAdmin); // Debug message
 
-                    // Open the appropriate dashboard
-                    if (isAdmin) {
-                        AdminDashboard adminDashboard = new AdminDashboard();
-                        adminDashboard.setVisible(true);
-                    } else {
-                        UserDashboard userDashboard = new UserDashboard(userId);
-                        userDashboard.setVisible(true);
-                    }
-                    dispose();
+                if (storedIsAdmin == isAdmin) {
+                    // ...rest of the existing login success code...
                 } else {
-                    JOptionPane.showMessageDialog(this, "Invalid designation.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Invalid designation for user.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Database error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Login error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
     }
